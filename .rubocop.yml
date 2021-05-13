@@ -1,0 +1,32 @@
+AllCops:
+  NewCops: enable
+  Exclude:
+    - "cutter.rb"
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+Style/StringLiterals:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+
+Layout/IndentationStyle:
+  Enabled: false
+Layout/IndentationWidth:
+  Enabled: false
+Layout/FirstHashElementIndentation:
+  Enabled: false
+Layout/FirstArgumentIndentation:
+  Enabled: false
+Layout/HashAlignment:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+Metrics/MethodLength:
+  Enabled: false
+Metrics/AbcSize:
+  Enabled: false
+
+Naming/MethodParameterName:
+  Enabled: false
