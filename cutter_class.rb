@@ -6,7 +6,6 @@ class Cutter
   include Magick
 
   attr_reader :filename, :tile_size, :ext, :tiles_path, :bg_color
-  attr_accessor :images, :resizing_time, :tiles_time, :full_time
 
   DEFAULT_RUN_OPTIONS = {
     filename: 'test.jpg',
@@ -26,8 +25,8 @@ class Cutter
     @tiles_path = options[:tiles_path]
     @bg_color = options[:bg_color]
 
-    @resizing_time = nil
-    @tiles_time = nil
+    @resizing_time = 0
+    @tiles_time = 0
     @full_time = 0
 
     puts '🗺️ Maps tile cutter v1.0'.green
@@ -67,14 +66,14 @@ class Cutter
     puts "Resized image size at zoom 0: " + "#{resized_max.columns}px #{resized_max.rows}px".yellow
     puts
 
-    images = []
+    @images = []
     z = 0
     exp = 1
     while exp <= max_exp
       puts "Resizing image to zoom #{z}..."
       zoom_size = exp * tile_size
       new_image = resized_max.resize_to_fit(zoom_size, zoom_size)
-      images << {
+      @images << {
         zoom: z,
         chunks: exp,
         image: new_image
@@ -84,12 +83,12 @@ class Cutter
     end
 
     puts
-    puts images
+    puts @images
 
     stop = Time.now
-    resizing_time = stop - start
-    full_time += resizing_time
-    resizing_time
+    @resizing_time = stop - start
+    @full_time += @resizing_time
+    @resizing_time
   end
 
   # Create or empty tiles folder and force tiles making
@@ -102,7 +101,7 @@ class Cutter
     x = 0
     y = 0
     tiles_done = 0
-    images.each_with_index do |img, z|
+    @images.each_with_index do |img, z|
       puts "Making tiles for zoom #{z}"
       chunks_count = img[:chunks]
       x = 0
@@ -120,9 +119,9 @@ class Cutter
     puts "Tiles created: " + "#{tiles_done}".yellow
 
     stop = Time.now
-    tiles_time = stop - start
-    full_time += tiles_time
-    tiles_time
+    @tiles_time = stop - start
+    @full_time += @tiles_time
+    @tiles_time
   end
 
   # Generate chunk and save it to tiles folder
@@ -139,8 +138,8 @@ class Cutter
   def show_time
     puts
     puts '⏱️ Execution time'.green
-    puts "Resizing:     " + "#{resizing_time.ceil} s".yellow if resizing_time
-    puts "Saving tiles: " + "#{tiles_time.ceil} s".yellow if tiles_time
-    puts "Full:         " + "#{full_time.ceil} s".yellow if full_time
+    puts "Resizing:     " + "#{@resizing_time.ceil} s".yellow if @resizing_time
+    puts "Saving tiles: " + "#{@tiles_time.ceil} s".yellow if @tiles_time
+    puts "Full:         " + "#{@full_time.ceil} s".yellow if @full_time
   end
 end
