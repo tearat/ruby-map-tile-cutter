@@ -8,7 +8,7 @@ class Cutter
   attr_reader :filename, :tile_size, :ext, :tiles_path, :bg_color
 
   DEFAULT_RUN_OPTIONS = {
-    filename: 'test.jpg',
+    filename: 'map.jpg',
     tile_size: 256,
     ext: 'png',
     bg_color: '#111',
@@ -46,39 +46,39 @@ class Cutter
     height = img.rows
     puts
     puts "✔️ Make templates".green
-    puts "Initial image size:           " + "#{width}px #{height}px".yellow
+    puts "Initial image size:   " + "#{width}px x #{height}px".yellow
 
-    columns = (width.to_f / tile_size).ceil
-    rows = (height.to_f / tile_size).ceil
+    max_side = [width, height].max
+    max_side_chunks = (max_side.to_f / tile_size).ceil
+    puts "Chunks count:         " + "#{max_side_chunks}".yellow + " (ceil of max side (#{max_side}) / tile_size (#{tile_size})"
 
-    max_chunks_count = [columns, rows].max
-    puts "Calculated chunks count:      " + "#{max_chunks_count}".yellow
-    max_exp = 1
-    max_exp *= 2 while max_exp < max_chunks_count
-    puts "Calculated zoom levels:       " + "#{max_exp}".yellow
+    max_zoom = 1
+    max_zoom *= 2 while max_zoom < max_side_chunks
+    puts "Zoom levels:          " + "#{max_zoom}".yellow + " (nearest power of 2 >= max_side_chunks)"
 
-    new_size = max_exp * tile_size
+    new_size = max_zoom * tile_size
+    puts "New image size:       " + "#{new_size}px x #{new_size}px".yellow + " (max_zoom (#{max_zoom}) * tile_size (#{tile_size}))"
 
     blank = Magick::Image.new(new_size, new_size)
     blank.background_color = bg_color
     blank.erase!
     resized_max = blank.composite(img, CenterGravity, AtopCompositeOp)
-    puts "Resized image size at zoom 0: " + "#{resized_max.columns}px #{resized_max.rows}px".yellow
+    puts "Created zoom 0 image: " + "#{new_size}px x #{new_size}px".yellow
     puts
 
     @images = []
-    z = 0
+
+    zoom = 0
     exp = 1
-    while exp <= max_exp
-      puts "Resizing image to zoom #{z}..."
-      zoom_size = exp * tile_size
-      new_image = resized_max.resize_to_fit(zoom_size, zoom_size)
+    while exp <= max_zoom
+      resize_size = exp * tile_size
+      new_image = resized_max.resize_to_fit(resize_size, resize_size)
       @images << {
-        zoom: z,
-        chunks: exp,
+        zoom: zoom,
+        chunks_count: exp,
         image: new_image
       }
-      z += 1
+      zoom += 1
       exp *= 2
     end
 
@@ -103,11 +103,10 @@ class Cutter
     tiles_done = 0
     @images.each_with_index do |img, z|
       puts "Making tiles for zoom #{z}"
-      chunks_count = img[:chunks]
       x = 0
-      while x < chunks_count
+      while x < img[:chunks_count]
         y = 0
-        while y < chunks_count
+        while y < img[:chunks_count]
           make_tile(x, y, img)
           tiles_done += 1
           y += 1
